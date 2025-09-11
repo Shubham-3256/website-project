@@ -17,6 +17,10 @@ import BookingPage from "./pages/BookingPage";
 import ContactPage from "./pages/ContactPage";
 import ContactConfirmation from "./pages/ContactConfirmation";
 import NotFound from "./pages/NotFound";
+import AuthPage from "@/pages/AuthPage";
+import ProfilePage from "@/pages/ProfilePage";
+import MyOrders from "@/pages/MyOrders";
+import MyBookings from "@/pages/MyBookings";
 import BookingConfirmation from "./pages/BookingConfirmation";
 const queryClient = new QueryClient();
 
@@ -50,6 +54,10 @@ const App = () => (
               path="/contact-confirmation"
               element={<ContactConfirmation />}
             />
+            <Route path="/my-orders" element={<MyOrders />} />
+            <Route path="/my-bookings" element={<MyBookings />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/auth" element={<AuthPage />} />
             {/* Fallback */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -45,6 +45,9 @@ const BookingPage = () => {
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     const { error } = await supabase.from("bookings").insert([
       {
@@ -53,6 +56,7 @@ const BookingPage = () => {
         date: selectedDate,
         time: selectedTime,
         status: "pending", // default
+        user_id: user?.id,
       },
     ]);
 

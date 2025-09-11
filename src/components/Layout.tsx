@@ -1,17 +1,40 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ShoppingCart, User, Phone, Clock, MapPin } from "lucide-react";
-
+import { ShoppingCart, User, Phone, Clock } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
+  const [user, setUser] = useState<any>(null);
 
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
+  useEffect(() => {
+    // Get current session
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+    });
+
+    // Listen for login/logout
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => {
+      subscription.subscription.unsubscribe();
+    };
+  }, []);
+
+  const isActive = (path: string) => location.pathname === path;
 
   const navItems = [
     { path: "/", label: "Home" },
@@ -38,13 +61,39 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <span>9AM - 4PM</span>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              {/* Login placeholder (you can later wrap this in Link to="/login") */}
-              <Link to="/login">
-                <User className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
-              </Link>
 
-              {/* Cart icon → /cart page */}
+            {/* Right side icons */}
+            <div className="flex items-center gap-4 relative">
+              {/* User icon logic */}
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button>
+                      <User className="h-5 w-5 cursor-pointer text-muted-foreground hover:text-primary" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40">
+                    <DropdownMenuItem asChild>
+                      <Link to="/my-orders">My Orders</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/my-bookings">My Bookings</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => supabase.auth.signOut()}
+                      className="text-red-500"
+                    >
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Link to="/auth">
+                  <User className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
+                </Link>
+              )}
+
+              {/* Cart icon */}
               <Link to="/cart">
                 <ShoppingCart className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
               </Link>
