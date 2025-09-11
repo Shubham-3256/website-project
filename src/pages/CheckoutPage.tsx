@@ -81,11 +81,18 @@ const CheckoutPage = () => {
     } = await supabase.auth.getUser();
     const { error } = await supabase.from("orders").insert([
       {
-        ...formData,
-        items: orderItems, // JSON column recommended in Supabase
+        user_id: user?.id,
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        address: formData.address,
+        pincode: formData.pincode,
+        deliveryMethod: formData.deliveryMethod,
+        paymentMethod: formData.paymentMethod,
+        specialInstructions: formData.specialInstructions,
+        items: orderItems,
         total,
         status: formData.paymentMethod === "COD" ? "pending" : "paid",
-        user_id: user?.id,
       },
     ]);
 

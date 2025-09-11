@@ -7,10 +7,25 @@ import { useNavigate } from "react-router-dom";
 
 const CartPage = () => {
   const { toast } = useToast();
-  const navigate = useNavigate(); // ✅ moved inside component
+  const navigate = useNavigate();
   const [cartItems, setCartItems] = useState<any[]>([]);
+  const [user, setUser] = useState<any>(null);
 
-  const fetchCart = async () => {
+  // Check login
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data } = await supabase.auth.getUser();
+      if (!data?.user) {
+        navigate("/auth", { state: { from: "/cart" } }); // 👈 redirect if not logged in
+        return;
+      }
+      setUser(data.user);
+      fetchCart(data.user.id);
+    };
+    checkUser();
+  }, [navigate]);
+
+  const fetchCart = async (userId: string) => {
     const { data, error } = await supabase
       .from("cart")
       .select(
@@ -25,6 +40,7 @@ const CartPage = () => {
         )
       `
       )
+      .eq("user_id", userId) // ✅ only current user's cart
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -34,17 +50,14 @@ const CartPage = () => {
     }
   };
 
-  useEffect(() => {
-    fetchCart();
-  }, []);
-
   const updateQuantity = async (id: string, newQuantity: number) => {
-    if (newQuantity < 1) return; // no negative or 0
+    if (newQuantity < 1) return;
 
     const { error } = await supabase
       .from("cart")
       .update({ quantity: newQuantity })
-      .eq("id", id);
+      .eq("id", id)
+      .eq("user_id", user.id);
 
     if (error) {
       toast({
@@ -62,7 +75,11 @@ const CartPage = () => {
   };
 
   const handleRemove = async (id: string) => {
-    const { error } = await supabase.from("cart").delete().eq("id", id);
+    const { error } = await supabase
+      .from("cart")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id);
 
     if (error) {
       toast({
@@ -80,7 +97,7 @@ const CartPage = () => {
   };
 
   const handleCheckout = () => {
-    navigate("/checkout"); // 👈 just go to checkout page
+    navigate("/checkout");
   };
 
   return (

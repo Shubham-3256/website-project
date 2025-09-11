@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -10,44 +10,57 @@ const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // where to return after login
+  const from = (location.state as any)?.from || "/";
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
     setFormData({ ...formData, [e.target.id]: e.target.value });
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    let error;
 
     if (isLogin) {
-      const { error: loginError } = await supabase.auth.signInWithPassword({
+      const { error, data } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
-      error = loginError;
-    } else {
-      const { error: signUpError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-      });
-      error = signUpError;
-    }
 
-    if (error) {
-      toast({
-        title: isLogin ? "Login Failed" : "Registration Failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      if (error) {
+        toast({
+          title: "Login failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // success: redirect to original page
+      toast({ title: "Logged in", description: "Welcome back!" });
+      navigate(from, { replace: true });
     } else {
-      toast({
-        title: isLogin ? "Login Successful" : "Registration Successful",
-        description: isLogin
-          ? "Welcome back!"
-          : "Please check your email to verify your account.",
+      const { error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
       });
-      navigate("/");
+
+      if (error) {
+        toast({
+          title: "Signup failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Check your email",
+        description:
+          "A confirmation link was sent. After verification, login to continue.",
+      });
+      setIsLogin(true); // switch to login
     }
   };
 

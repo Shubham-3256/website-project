@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabaseClient";
 import { useToast } from "@/hooks/use-toast";
@@ -23,10 +23,27 @@ const FoodCard: React.FC<FoodCardProps> = ({
   description,
 }) => {
   const { toast } = useToast();
+  const navigate = useNavigate(); // ✅ moved inside component
+
+  const handleOrderClick = async () => {
+    const { data } = await supabase.auth.getUser();
+    if (!data?.user) {
+      navigate("/auth", { state: { from: `/order/${id}` } });
+    } else {
+      navigate(`/order/${id}`);
+    }
+  };
 
   const handleAddToCart = async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    if (!userData?.user) {
+      navigate("/auth", { state: { from: "/cart" } });
+      return;
+    }
+
     const { error } = await supabase.from("cart").insert([
       {
+        user_id: userData.user.id, // ✅ ensure cart is tied to user
         item_id: id,
         quantity: 1,
       },
@@ -85,7 +102,7 @@ const FoodCard: React.FC<FoodCardProps> = ({
           <Button
             variant="outline"
             className="restaurant-button-secondary"
-            onClick={handleAddToCart}
+            onClick={handleAddToCart} // ✅ corrected
           >
             Add to cart
           </Button>

@@ -51,12 +51,17 @@ const BookingPage = () => {
 
     const { error } = await supabase.from("bookings").insert([
       {
-        ...formData,
+        user_id: user?.id,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
         guests,
         date: selectedDate,
         time: selectedTime,
-        status: "pending", // default
-        user_id: user?.id,
+        occasion: formData.occasion, // if you added extra fields
+        table_preference: formData.tablePreference,
+        special_requests: formData.specialRequests,
+        status: "pending",
       },
     ]);
 
