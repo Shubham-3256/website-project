@@ -34,32 +34,68 @@ const MyOrders = () => {
     fetchOrders();
   }, []);
 
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">My Orders</h1>
-      {orders.length === 0 ? (
-        <p>No orders yet.</p>
-      ) : (
-        <div className="space-y-4">
-          {orders.map((order) => (
-            <div key={order.id} className="border p-4 rounded-md">
-              <p>
-                <strong>Status:</strong> {order.status}
-              </p>
-              <p>
-                <strong>Total:</strong> Rs. {order.total}
-              </p>
-              <p>
-                <strong>Payment:</strong> {order.paymentMethod}
-              </p>
-              <p>
-                <strong>Date:</strong>{" "}
-                {new Date(order.created_at).toLocaleString()}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
+    <div className="min-h-screen bg-background px-4 py-10">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-3xl font-serif font-bold text-center mb-10">
+          My Orders
+        </h1>
+
+        {orders.length === 0 ? (
+          <div className="text-center text-muted-foreground">
+            <p className="text-lg">You haven’t placed any orders yet.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {orders.map((order) => (
+              <div
+                key={order.id}
+                className="bg-card shadow-md rounded-xl p-6 border border-border hover:shadow-lg transition"
+              >
+                {/* Order Header */}
+                <div className="flex justify-between items-center mb-4">
+                  <span
+                    className={`px-3 py-1 text-sm rounded-full font-medium ${getStatusColor(
+                      order.status
+                    )}`}
+                  >
+                    {order.status}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(order.created_at).toLocaleString()}
+                  </span>
+                </div>
+
+                {/* Order Info */}
+                <div className="space-y-2 text-sm">
+                  <p>
+                    <strong>Total:</strong>{" "}
+                    <span className="font-semibold text-lg">
+                      ₹{order.total}
+                    </span>
+                  </p>
+                  <p>
+                    <strong>Payment:</strong> {order.paymentMethod}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

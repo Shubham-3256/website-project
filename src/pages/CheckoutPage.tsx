@@ -57,7 +57,9 @@ const CheckoutPage = () => {
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
@@ -76,20 +78,15 @@ const CheckoutPage = () => {
       (sum, item) => sum + item.price * item.quantity,
       0
     );
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
     const { error } = await supabase.from("orders").insert([
       {
         user_id: user?.id,
-        name: formData.name,
-        phone: formData.phone,
-        email: formData.email,
-        address: formData.address,
-        pincode: formData.pincode,
-        deliveryMethod: formData.deliveryMethod,
-        paymentMethod: formData.paymentMethod,
-        specialInstructions: formData.specialInstructions,
+        ...formData,
         items: orderItems,
         total,
         status: formData.paymentMethod === "COD" ? "pending" : "paid",
@@ -113,13 +110,16 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background py-10 px-4">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <h1 className="text-3xl font-bold mb-6">Checkout</h1>
+    <div className="min-h-screen bg-background py-8 px-4">
+      <div className="max-w-3xl mx-auto space-y-8">
+        <h1 className="text-3xl font-bold text-center">Checkout</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6 bg-card p-6 rounded-lg shadow"
+        >
           {/* Customer Details */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="name">Name</Label>
               <Input
@@ -138,7 +138,7 @@ const CheckoutPage = () => {
                 required
               />
             </div>
-            <div className="col-span-2">
+            <div className="md:col-span-2">
               <Label htmlFor="email">Email (for receipt)</Label>
               <Input
                 id="email"
@@ -159,7 +159,7 @@ const CheckoutPage = () => {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="pincode">Pin Code</Label>
               <Input
@@ -174,10 +174,8 @@ const CheckoutPage = () => {
               <select
                 id="deliveryMethod"
                 value={formData.deliveryMethod}
-                onChange={(e) =>
-                  setFormData({ ...formData, deliveryMethod: e.target.value })
-                }
-                className="border rounded px-3 py-2 w-full"
+                onChange={handleInputChange}
+                className="border rounded-md px-3 py-2 w-full"
               >
                 <option value="Delivery">Home Delivery</option>
                 <option value="Takeaway">Takeaway</option>
@@ -185,9 +183,10 @@ const CheckoutPage = () => {
             </div>
           </div>
 
+          {/* Payment Methods */}
           <div>
             <Label>Payment Method</Label>
-            <div className="grid grid-cols-2 gap-4 mt-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2">
               {["COD", "Card", "UPI", "NetBanking", "Wallet"].map((method) => (
                 <Button
                   key={method}
@@ -198,6 +197,7 @@ const CheckoutPage = () => {
                   onClick={() =>
                     setFormData({ ...formData, paymentMethod: method })
                   }
+                  className="w-full"
                 >
                   {method === "COD" ? "Cash on Delivery" : method}
                 </Button>
@@ -218,21 +218,21 @@ const CheckoutPage = () => {
           </div>
 
           {/* Order Summary */}
-          <div className="bg-card p-4 rounded-lg shadow-sm space-y-2">
+          <div className="bg-muted p-4 rounded-lg space-y-2">
+            <h2 className="font-semibold text-lg mb-2">Order Summary</h2>
             {cartItems.map((item, idx) => (
-              <div key={idx} className="flex justify-between">
+              <div key={idx} className="flex justify-between text-sm">
                 <span>
                   {item.name} × {item.quantity}
                 </span>
-                <span>Rs. {item.price * item.quantity}</span>
+                <span>₹{item.price * item.quantity}</span>
               </div>
             ))}
             <hr />
-            <div className="flex justify-between font-bold">
+            <div className="flex justify-between font-bold text-lg">
               <span>Total</span>
               <span>
-                Rs.{" "}
-                {cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0)}
+                ₹{cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0)}
               </span>
             </div>
           </div>

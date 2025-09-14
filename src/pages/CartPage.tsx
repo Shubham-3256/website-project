@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const CartPage = () => {
@@ -11,12 +11,12 @@ const CartPage = () => {
   const [cartItems, setCartItems] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
 
-  // Check login
+  // ✅ Check login and fetch cart
   useEffect(() => {
     const checkUser = async () => {
       const { data } = await supabase.auth.getUser();
       if (!data?.user) {
-        navigate("/auth", { state: { from: "/cart" } }); // 👈 redirect if not logged in
+        navigate("/auth", { state: { from: "/cart" } });
         return;
       }
       setUser(data.user);
@@ -40,7 +40,7 @@ const CartPage = () => {
         )
       `
       )
-      .eq("user_id", userId) // ✅ only current user's cart
+      .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -100,36 +100,51 @@ const CartPage = () => {
     navigate("/checkout");
   };
 
+  // ✅ Total calculation
+  const cartTotal = cartItems.reduce(
+    (sum, item) => sum + item.menu_items.price * item.quantity,
+    0
+  );
+
   return (
     <div className="min-h-screen bg-background py-10 px-4">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <h1 className="text-3xl font-bold mb-6">Your Cart</h1>
+      <div className="max-w-5xl mx-auto space-y-8">
+        <h1 className="text-3xl md:text-4xl font-serif font-bold text-center">
+          Your Cart
+        </h1>
 
         {cartItems.length === 0 ? (
-          <p className="text-muted-foreground">Your cart is empty.</p>
+          <p className="text-center text-muted-foreground mt-6">
+            Your cart is empty. Start adding delicious dishes!
+          </p>
         ) : (
           <>
+            {/* Cart Items */}
             <div className="space-y-4">
               {cartItems.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between bg-card p-4 rounded-lg shadow-sm"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-card p-4 rounded-xl shadow-sm hover:shadow-md transition"
                 >
+                  {/* Left side - Image + Info */}
                   <div className="flex items-center gap-4">
                     <img
                       src={item.menu_items.image_url}
                       alt={item.menu_items.name}
-                      className="w-16 h-16 object-cover rounded"
+                      className="w-20 h-20 object-cover rounded-lg"
                     />
                     <div>
-                      <h3 className="font-semibold">{item.menu_items.name}</h3>
+                      <h3 className="font-semibold text-lg">
+                        {item.menu_items.name}
+                      </h3>
                       <p className="text-sm text-muted-foreground">
-                        Rs. {item.menu_items.price} × {item.quantity}
+                        Rs. {item.menu_items.price}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4">
+                  {/* Right side - Actions */}
+                  <div className="flex flex-wrap items-center gap-4 mt-4 sm:mt-0">
                     {/* Quantity controls */}
                     <div className="flex items-center gap-2">
                       <Button
@@ -157,23 +172,37 @@ const CartPage = () => {
                       </Button>
                     </div>
 
+                    {/* Price */}
                     <p className="font-bold text-primary">
                       Rs. {item.menu_items.price * item.quantity}
                     </p>
+
+                    {/* Remove */}
                     <Button
-                      variant="outline"
+                      variant="ghost"
+                      size="icon"
                       onClick={() => handleRemove(item.id)}
+                      className="text-red-500 hover:text-red-600"
                     >
-                      Remove
+                      <Trash2 className="h-5 w-5" />
                     </Button>
                   </div>
                 </div>
               ))}
             </div>
 
-            <Button onClick={handleCheckout} className="w-full">
-              Checkout
-            </Button>
+            {/* Summary + Checkout */}
+            <div className="border-t pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <p className="text-lg font-medium">
+                Total:{" "}
+                <span className="text-2xl font-bold text-primary">
+                  Rs. {cartTotal}
+                </span>
+              </p>
+              <Button onClick={handleCheckout} className="px-10 py-3 text-lg">
+                Proceed to Checkout
+              </Button>
+            </div>
           </>
         )}
       </div>

@@ -58,9 +58,9 @@ const BookingPage = () => {
         guests,
         date: selectedDate,
         time: selectedTime,
-        occasion: formData.occasion, // if you added extra fields
-        table_preference: formData.tablePreference,
-        special_requests: formData.specialRequests,
+        occasion: formData.occasion,
+        tablePreference: formData.tablePreference,
+        specialRequests: formData.specialRequests,
         status: "pending",
       },
     ]);
@@ -82,7 +82,7 @@ const BookingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-orange-100">
       {/* Hero Section */}
       <section
         className="relative py-32 px-4 bg-cover bg-center"
@@ -91,7 +91,12 @@ const BookingPage = () => {
         }}
       >
         <div className="max-w-7xl mx-auto text-center text-white">
-          <h1 className="text-4xl md:text-6xl font-serif font-bold">Booking</h1>
+          <h1 className="text-4xl md:text-6xl font-serif font-bold drop-shadow-lg">
+            Book Your Table
+          </h1>
+          <p className="mt-4 text-lg md:text-xl opacity-90">
+            Reserve the best dining experience with us
+          </p>
         </div>
       </section>
 
@@ -100,10 +105,10 @@ const BookingPage = () => {
         <div className="max-w-4xl mx-auto">
           <form
             onSubmit={handleBookingSubmit}
-            className="bg-card p-8 rounded-lg shadow-lg space-y-8"
+            className="bg-white p-8 rounded-2xl shadow-xl space-y-8"
           >
             {/* Contact Info */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="name">Name</Label>
                 <Input
@@ -117,6 +122,7 @@ const BookingPage = () => {
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
+                  type="email"
                   value={formData.email}
                   onChange={handleInputChange}
                   required
@@ -126,6 +132,7 @@ const BookingPage = () => {
                 <Label htmlFor="phone">Phone</Label>
                 <Input
                   id="phone"
+                  type="tel"
                   value={formData.phone}
                   onChange={handleInputChange}
                   required
@@ -134,7 +141,7 @@ const BookingPage = () => {
             </div>
 
             {/* Date, Time, Guests */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div>
                 <Label htmlFor="date">Date</Label>
                 <Input
@@ -157,20 +164,30 @@ const BookingPage = () => {
               </div>
               <div>
                 <Label>Guests</Label>
-                <div className="flex items-center gap-4 py-3">
-                  <Button type="button" onClick={() => handleGuestChange(-1)}>
-                    -
+                <div className="flex items-center gap-4 py-2">
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    onClick={() => handleGuestChange(-1)}
+                  >
+                    <Minus className="w-4 h-4" />
                   </Button>
-                  <span>{guests}</span>
-                  <Button type="button" onClick={() => handleGuestChange(1)}>
-                    +
+                  <span className="font-medium">{guests}</span>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    onClick={() => handleGuestChange(1)}
+                  >
+                    <Plus className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
             </div>
 
             {/* Occasion & Table Preference */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="occasion">Occasion</Label>
                 <Input
@@ -212,7 +229,7 @@ const BookingPage = () => {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Choose confirmation method" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="email">Email</SelectItem>
@@ -221,10 +238,11 @@ const BookingPage = () => {
               </Select>
             </div>
 
+            {/* Submit */}
             <div className="text-center">
               <Button
                 type="submit"
-                className="restaurant-button-primary px-12 py-3 text-lg"
+                className="w-full sm:w-auto restaurant-button-primary px-12 py-3 text-lg"
               >
                 Book a table now
               </Button>

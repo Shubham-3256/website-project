@@ -35,30 +35,49 @@ const MyBookings = () => {
   }, []);
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">My Bookings</h1>
-      {bookings.length === 0 ? (
-        <p>No bookings yet.</p>
-      ) : (
-        <div className="space-y-4">
-          {bookings.map((booking) => (
-            <div key={booking.id} className="border p-4 rounded-md">
-              <p>
-                <strong>Name:</strong> {booking.name}
-              </p>
-              <p>
-                <strong>Date:</strong> {booking.date}
-              </p>
-              <p>
-                <strong>Time:</strong> {booking.time}
-              </p>
-              <p>
-                <strong>Guests:</strong> {booking.guests}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
+    <div className="min-h-screen bg-background px-4 py-10">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-3xl font-serif font-bold text-center mb-10">
+          My Bookings
+        </h1>
+
+        {bookings.length === 0 ? (
+          <div className="text-center text-muted-foreground">
+            <p className="text-lg">You don’t have any bookings yet.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {bookings.map((booking) => (
+              <div
+                key={booking.id}
+                className="bg-card shadow-md rounded-xl p-6 border border-border hover:shadow-lg transition"
+              >
+                {/* Header */}
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold">{booking.name}</h2>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(booking.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+
+                {/* Booking Details */}
+                <div className="space-y-2 text-sm">
+                  <p>
+                    <strong>Date:</strong> {booking.date}
+                  </p>
+                  <p>
+                    <strong>Time:</strong> {booking.time}
+                  </p>
+                  <p>
+                    <strong>Guests:</strong>{" "}
+                    <span className="font-medium">{booking.guests}</span>
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
