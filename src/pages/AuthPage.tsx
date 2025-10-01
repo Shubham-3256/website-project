@@ -13,7 +13,7 @@ const AuthPage = () => {
   const location = useLocation();
   const { toast } = useToast();
 
-  // where to return after login
+  // Where to return after login (for non-admins)
   const from = (location.state as any)?.from || "/";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -23,24 +23,48 @@ const AuthPage = () => {
     e.preventDefault();
 
     if (isLogin) {
-      const { error, data } = await supabase.auth.signInWithPassword({
+      // Sign in
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
 
-      if (error) {
+      if (error || !data.user) {
         toast({
           title: "Login failed",
-          description: error.message,
+          description: error?.message || "Unknown error",
           variant: "destructive",
         });
         return;
       }
 
-      // success: redirect to original page
+      // Fetch role from "users" table
+      const { data: roleData, error: roleError } = await supabase
+        .from("users")
+        .select("role")
+        .eq("id", data.user.id)
+        .single();
+
+      const role = roleData?.role || "customer";
+
+      if (roleError) {
+        console.error("Error fetching role:", roleError);
+        toast({
+          title: "Login warning",
+          description: "Could not determine role, defaulting to customer.",
+        });
+      }
+
       toast({ title: "Logged in", description: "Welcome back!" });
-      navigate(from, { replace: true });
+
+      // Redirect based on role
+      if (role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate(from, { replace: true });
+      }
     } else {
+      // Sign up
       const { error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -55,11 +79,24 @@ const AuthPage = () => {
         return;
       }
 
+      // Insert new user in "users" table with default role 'customer'
+      const { error: insertError } = await supabase.from("users").insert([
+        {
+          id: (await supabase.auth.getUser()).data.user?.id,
+          role: "customer",
+        },
+      ]);
+
+      if (insertError) {
+        console.error("Error inserting new user:", insertError);
+      }
+
       toast({
         title: "Check your email",
         description:
           "A confirmation link was sent. After verification, login to continue.",
       });
+
       setIsLogin(true); // switch to login
     }
   };

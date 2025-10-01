@@ -5,41 +5,59 @@ import { useToast } from "@/hooks/use-toast";
 
 interface Props {
   children: React.ReactElement;
+  role?: "admin" | "customer"; // optional role check
 }
 
-const ProtectedRoute: React.FC<Props> = ({ children }) => {
+const ProtectedRoute: React.FC<Props> = ({ children, role }) => {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
   const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
     let mounted = true;
-    (async () => {
+
+    const checkAuth = async () => {
       try {
-        const { data } = await supabase.auth.getUser();
+        const { data: userData, error: userError } =
+          await supabase.auth.getUser();
         if (!mounted) return;
-        if (data?.user) {
-          setAuthenticated(true);
-        } else {
-          // show a small toast telling user to login
-          toast({
-            title: "Login required",
-            description: "Please login to continue.",
-          });
+
+        if (userError || !userData?.user) {
           setAuthenticated(false);
+          return;
+        }
+
+        setAuthenticated(true);
+
+        // Fetch role from "users" table
+        const { data: roleData, error: roleError } = await supabase
+          .from("users")
+          .select("role")
+          .eq("id", userData.user.id)
+          .single();
+
+        if (roleError) {
+          console.error("Error fetching role:", roleError);
+          setUserRole("customer"); // fallback role
+        } else {
+          setUserRole(roleData?.role || "customer");
         }
       } catch (err) {
+        console.error("ProtectedRoute error:", err);
         setAuthenticated(false);
       } finally {
         if (mounted) setLoading(false);
       }
-    })();
+    };
+
+    checkAuth();
 
     return () => {
       mounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) {
@@ -51,8 +69,18 @@ const ProtectedRoute: React.FC<Props> = ({ children }) => {
   }
 
   if (!authenticated) {
-    // redirect to /auth and pass original location in state
+    // Redirect to login page and preserve the original location
     return <Navigate to="/auth" replace state={{ from: location.pathname }} />;
+  }
+
+  if (role && userRole !== role) {
+    // Only show toast once
+    toast({
+      title: "Access denied",
+      description: "You do not have permission to access this page.",
+      variant: "destructive",
+    });
+    return <Navigate to="/" replace />;
   }
 
   return children;

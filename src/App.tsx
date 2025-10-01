@@ -5,24 +5,22 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
-import ProtectedRoute from "@/components/ProtectedRoute"; // <- new
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 // Pages
 import Home from "./pages/Home";
 import Menu from "./pages/Menu";
-import OrderFood from "./pages/OrderFood"; // item detail
+import OrderFood from "./pages/OrderFood";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import OrderConfirmation from "./pages/OrderConfirmation";
-import BookingPage from "./pages/BookingPage";
-import BookingConfirmation from "./pages/BookingConfirmation";
 import ContactPage from "./pages/ContactPage";
 import ContactConfirmation from "./pages/ContactConfirmation";
 import NotFound from "./pages/NotFound";
 import AuthPage from "@/pages/AuthPage";
 import ProfilePage from "@/pages/ProfilePage";
 import MyOrders from "@/pages/MyOrders";
-import MyBookings from "@/pages/MyBookings";
+import AdminPage from "@/pages/AdminPage";
 
 const queryClient = new QueryClient();
 
@@ -38,7 +36,7 @@ const App = () => (
             <Route path="/menu" element={<Menu />} />
             <Route path="/menu/:category" element={<Menu />} />
 
-            {/* Order Flow - protected (user must be logged in to view/order) */}
+            {/* Order Flow */}
             <Route
               path="/order"
               element={
@@ -56,7 +54,7 @@ const App = () => (
               }
             />
 
-            {/* Cart is public (users can add items), checkout is protected */}
+            {/* Cart & Checkout */}
             <Route path="/cart" element={<CartPage />} />
             <Route
               path="/checkout"
@@ -68,20 +66,6 @@ const App = () => (
             />
             <Route path="/order-confirmation" element={<OrderConfirmation />} />
 
-            {/* Booking Flow - protect booking page */}
-            <Route
-              path="/booking"
-              element={
-                <ProtectedRoute>
-                  <BookingPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/booking-confirmation"
-              element={<BookingConfirmation />}
-            />
-
             {/* Contact Flow */}
             <Route path="/contact" element={<ContactPage />} />
             <Route
@@ -89,20 +73,12 @@ const App = () => (
               element={<ContactConfirmation />}
             />
 
-            {/* User / profile pages (protected) */}
+            {/* User Profile */}
             <Route
               path="/my-orders"
               element={
                 <ProtectedRoute>
                   <MyOrders />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/my-bookings"
-              element={
-                <ProtectedRoute>
-                  <MyBookings />
                 </ProtectedRoute>
               }
             />
@@ -115,7 +91,17 @@ const App = () => (
               }
             />
 
-            {/* Auth (login / register) */}
+            {/* Admin Dashboard */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute role="admin">
+                  <AdminPage />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Auth */}
             <Route path="/auth" element={<AuthPage />} />
 
             {/* Fallback */}

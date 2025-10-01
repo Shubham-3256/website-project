@@ -45,7 +45,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: "/", label: "Home" },
     { path: "/menu", label: "Menu" },
     { path: "/order", label: "Order Food" },
-    { path: "/booking", label: "Book a Table" },
     { path: "/contact", label: "Contact Us" },
   ];
 
@@ -84,9 +83,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <DropdownMenuContent align="end" className="w-40">
                     <DropdownMenuItem asChild>
                       <Link to="/my-orders">My Orders</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/my-bookings">My Bookings</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => supabase.auth.signOut()}
@@ -238,12 +234,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 className="hover:text-primary transition-colors block"
               >
                 Menu
-              </Link>
-              <Link
-                to="/booking"
-                className="hover:text-primary transition-colors block"
-              >
-                Book a Table
               </Link>
               <Link
                 to="/contact"
